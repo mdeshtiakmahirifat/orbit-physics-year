@@ -5,19 +5,24 @@
  const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return iso(d)};
  const weekday=s=>new Date(s+'T12:00:00Z').getUTCDay();
  const week=s=>add(s,-((weekday(s)+6)%7));
- const defaults=()=>({version:VERSION,settings:{days:[0,1,2,3,4],minutes:360,recovery:60,weeklyGoal:5,reward:'',name:'',start:'2026-10-24'},tasks:{},plans:{},notes:{},weeks:{},timer:null,updatedAt:null});
+ const defaults=()=>({version:VERSION,settings:{days:[0,1,2,3,4],minutes:660,recovery:60,weeklyGoal:5,reward:'',name:'',start:'2026-10-25',theme:'light',language:'bn'},tasks:{},plans:{},notes:{},weeks:{},timer:null,updatedAt:null});
  const complete=(state,id)=>{const x=state.tasks[id]||{};return !!(x.read&&x.practice&&x.review)};
  const spent=(state,id)=>Object.values(state.plans).flat().filter(s=>s.taskId===id&&s.done).reduce((a,s)=>a+s.minutes,0);
  const reserved=(state,id,asOf='0000-00-00')=>Object.values(state.plans).flat().filter(s=>s.taskId===id&&!s.done&&s.recovery&&s.date>=asOf).reduce((a,s)=>a+s.minutes,0);
  const remaining=(state,t)=>complete(state,t.id)?0:Math.max(15,t.minutes-spent(state,t.id));
  function allowed(state,t,d){
-  if(!state.settings.days.includes(weekday(d)))return false;
-  if(d<='2026-11-12')return true;
-  const rules={Chemistry:[0,1],ICT:[2,3],History:[4],CSE:[5],Skills:[6]};
-  return !rules[t.subject]||rules[t.subject].includes(weekday(d));
+  const wd=weekday(d);
+  if(t.archived)return false;
+  if(d<='2026-11-12')return ['Physics','Mathematics','Chemistry','History','ICT','Math private'].includes(t.subject);
+  if(wd===5)return t.subject==='CSE';
+  if(wd===6)return t.subject==='Skills';
+  if(!state.settings.days.includes(wd))return false;
+  const rules={Chemistry:[0,1],ICT:[2,3],History:[4],CSE:[],Skills:[]};
+  return !rules[t.subject]||rules[t.subject].includes(wd);
  }
+ function activeDay(state,d){return d<='2026-11-12'||[5,6].includes(weekday(d))||state.settings.days.includes(weekday(d))}
  function makePlan(state,tasks,d,budget=state.settings.minutes){
-  if(!state.settings.days.includes(weekday(d)))return [];
+  if(!activeDay(state,d))return [];
   let left=budget;const arr=[];
   for(const t of tasks.filter(t=>t.date===d&&!complete(state,t.id)&&!state.tasks[t.id]?.paused).sort((a,b)=>a.priority-b.priority||a.order-b.order)){
    if(!allowed(state,t,d)||left<15)continue;
@@ -26,11 +31,11 @@
   }
   return arr;
  }
- function backlog(state,tasks,today){return tasks.filter(t=>t.date>=state.settings.start&&t.date<today&&!complete(state,t.id)&&!state.tasks[t.id]?.paused).sort((a,b)=>a.priority-b.priority||a.date.localeCompare(b.date)||a.order-b.order)}
+ function backlog(state,tasks,today){return tasks.filter(t=>!t.archived&&t.date>=state.settings.start&&t.date<today&&!complete(state,t.id)&&!state.tasks[t.id]?.paused).sort((a,b)=>a.priority-b.priority||a.date.localeCompare(b.date)||a.order-b.order)}
  function recover(state,tasks,today,days=7){
   const candidates=backlog(state,tasks,today);const alloc=new Map();const output=[];
   for(let k=1;k<=days;k++){
-   const d=add(today,k);if(d>'2027-04-30'||!state.settings.days.includes(weekday(d)))continue;
+   const d=add(today,k);if(d>'2027-06-01'||!activeDay(state,d))continue;
    const existing=state.plans[d];
    // Preserve existing, user-visible plans; never displace completed/started sessions.
    const preserved=existing?existing.slice():[];
@@ -67,22 +72,22 @@
  }
  function validate(input,taskIds){
   if(!input||input.version!==VERSION||!input.settings||!input.tasks||!input.plans)throw Error('এই backup-এর format সমর্থিত নয়।');
-  const s=defaults(),st=input.settings;
+  const s={...defaults(),...input,tasks:{},plans:{},notes:{},weeks:{}},st=input.settings;
   if(!Array.isArray(st.days)||!st.days.length||st.days.some(x=>!Number.isInteger(x)||x<0||x>6))throw Error('Study days invalid');
   if(!Number.isInteger(st.minutes)||st.minutes<60||st.minutes>780||!Number.isInteger(st.recovery)||st.recovery<15||st.recovery>120)throw Error('Daily capacity invalid');
-  if(!Number.isInteger(st.weeklyGoal)||st.weeklyGoal<1||st.weeklyGoal>7||!/^202[67]-\d\d-\d\d$/.test(st.start)||st.start<'2026-10-24'||st.start>'2027-04-30')throw Error('Study settings invalid');
+  if(!Number.isInteger(st.weeklyGoal)||st.weeklyGoal<1||st.weeklyGoal>7||!/^202[67]-\d\d-\d\d$/.test(st.start)||st.start<'2026-10-24'||st.start>'2027-06-01')throw Error('Study settings invalid');
   s.settings={...s.settings,...st,days:[...new Set(st.days)],reward:String(st.reward||'').slice(0,1000),name:String(st.name||'').slice(0,80)};
-  const validDate=d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&d>='2026-10-24'&&d<='2027-04-30';
-  for(const [id,t]of Object.entries(input.tasks)){if(!taskIds.has(id))throw Error('Unknown task in backup');s.tasks[id]={read:!!t.read,practice:!!t.practice,review:!!t.review,paused:!!t.paused,note:String(t.note||'').slice(0,10000),topic:String(t.topic||'').slice(0,1000),resource:String(t.resource||'').slice(0,2000),goal:String(t.goal||'').slice(0,2000)}}
+  const validDate=d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&d>='2026-10-24'&&d<='2027-06-01';
+  for(const [id,t]of Object.entries(input.tasks)){if(!taskIds.has(id))throw Error('Unknown task in backup');s.tasks[id]={...t,read:!!t.read,practice:!!t.practice,review:!!t.review,paused:!!t.paused,note:String(t.note||'').slice(0,10000),topic:String(t.topic||'').slice(0,1000),resource:String(t.resource||'').slice(0,2000),goal:String(t.goal||'').slice(0,2000)}}
   const ids=new Set();
   for(const[d,list]of Object.entries(input.plans)){
    if(!validDate(d)||!Array.isArray(list)||list.length>30)throw Error('Invalid plan');
-   s.plans[d]=list.map(x=>{if(!taskIds.has(x.taskId)||!Number.isInteger(x.minutes)||x.minutes<1||x.minutes>780||typeof x.id!=='string'||ids.has(x.id))throw Error('Invalid or duplicate session');ids.add(x.id);return {id:x.id,taskId:x.taskId,date:d,minutes:x.minutes,done:!!x.done,recovery:!!x.recovery}});
+   s.plans[d]=list.map(x=>{if(!taskIds.has(x.taskId)||!Number.isInteger(x.minutes)||x.minutes<1||x.minutes>780||typeof x.id!=='string'||ids.has(x.id))throw Error('Invalid or duplicate session');ids.add(x.id);return {...x,id:x.id,taskId:x.taskId,date:d,minutes:x.minutes,done:!!x.done,recovery:!!x.recovery}});
   }
   for(const[d,n]of Object.entries(input.notes||{})){if(validDate(d))s.notes[d]=String(n).slice(0,10000)}
-  for(const[d,w]of Object.entries(input.weeks||{})){if(validDate(d)||d==='2026-10-19')s.weeks[d]={reward:String(w.reward||'').slice(0,1000),claimed:!!w.claimed}}
+  for(const[d,w]of Object.entries(input.weeks||{})){if(validDate(d)||d==='2026-10-19')s.weeks[d]={...w,reward:String(w.reward||'').slice(0,1000),claimed:!!w.claimed}}
   s.updatedAt=typeof input.updatedAt==='string'?input.updatedAt:null;
   return s;
  }
- return {VERSION,defaults,add,weekday,week,complete,remaining,reserved,spent,allowed,makePlan,backlog,recover,dayStats,weekStats,consistency,validate};
+ return {VERSION,defaults,activeDay,add,weekday,week,complete,remaining,reserved,spent,allowed,makePlan,backlog,recover,dayStats,weekStats,consistency,validate};
 });
