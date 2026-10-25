@@ -24,12 +24,13 @@
  function makePlan(state,tasks,d,budget=state.settings.minutes){
   if(!activeDay(state,d))return [];
   let left=budget;const arr=[];
-  for(const t of tasks.filter(t=>t.date===d&&!complete(state,t.id)&&!state.tasks[t.id]?.paused).sort((a,b)=>a.priority-b.priority||a.order-b.order)){
+  const fixed=t=>['Math private','BCS','English'].includes(t.subject)?0:1;
+  for(const t of tasks.filter(t=>t.date===d&&!complete(state,t.id)&&!state.tasks[t.id]?.paused).sort((a,b)=>fixed(a)-fixed(b)||a.priority-b.priority||a.order-b.order)){
    if(!allowed(state,t,d)||left<15)continue;
    const n=Math.min(remaining(state,t),left);
    arr.push({id:'base:'+t.id,taskId:t.id,date:d,minutes:n,done:false,recovery:false});left-=n;
   }
-  return arr;
+  return arr.sort((a,b)=>{const ta=tasks.find(t=>t.id===a.taskId),tb=tasks.find(t=>t.id===b.taskId);return ta.order-tb.order});
  }
  function backlog(state,tasks,today){return tasks.filter(t=>!t.archived&&t.date>=state.settings.start&&t.date<today&&!complete(state,t.id)&&!state.tasks[t.id]?.paused).sort((a,b)=>a.priority-b.priority||a.date.localeCompare(b.date)||a.order-b.order)}
  function recover(state,tasks,today,days=7){
