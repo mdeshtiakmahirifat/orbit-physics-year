@@ -39,3 +39,4 @@ html[data-theme=dark] .book-label,html[data-theme=dark] .task-meta,html[data-the
  footer{padding-bottom:24px}#saveState{display:block;font-size:14px;flex-basis:100%}
 }
 @media(max-width:920px){.calendar-grid{grid-template-columns:repeat(7,minmax(110px,1fr));overflow-x:auto;padding-bottom:12px;gap:6px}.calendar-cell{min-height:150px}.calendar-cell span{font-size:14px;overflow-wrap:normal}.calendar-cell:disabled{min-height:80px}}
+.task .task-body .description{font-size:18px!important;line-height:1.9}.task .task-body summary{font-size:16px!important;line-height:1.8}.task .session-row{justify-content:flex-start}.brand small{font-size:12px}
