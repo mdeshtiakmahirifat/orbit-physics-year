@@ -1,0 +1,41 @@
+/* Readability pass: larger text without changing saved state or study plans. */
+:root{--muted:#596579}
+body{font-size:18px;line-height:1.75}
+h1,.page-heading h1{font-size:34px;line-height:1.4}
+h2{font-size:25px;line-height:1.5}h3{font-size:20px;line-height:1.5}
+input,textarea,select{font-size:17px;line-height:1.6}
+textarea{min-height:120px}
+.description,.task-body p{font-size:18px;line-height:1.9}
+.subtitle,.micro,.muted,.book-label,.task-meta,.task-time,.panel p,.panel summary,.task-body summary,.checks label,.session-row,.note-label,.reward-field,.field label,.library-content p,.library-content td,.recovery-preview p{font-size:16px;line-height:1.8}
+.hero h2{font-size:29px}.hero p{font-size:17px;color:#46547d;max-width:650px}
+.button,.top-actions .button,.sidebar nav button,.text-button,.day-btn span,.timer-select{font-size:16px}
+.button,.icon-button{min-height:44px}.icon-button{min-width:44px}
+.checks input,.session-row input{width:21px;height:21px}
+.checks label,.session-row{min-height:44px;align-items:center}
+.task-title{font-size:20px}.task-time{flex-shrink:0}.task-head{flex-wrap:wrap}.task-heading{flex:1;min-width:180px}
+.eyebrow,.pill,.nav-label,.brand small,.local-label,.local-label small,.sidebar-note strong,.sidebar-note p,.breadcrumb,.breadcrumb b,#saveState,.cloud-strip,footer,small,.expand-rest>summary,.panel pre,#toast,#storageWarning{font-size:14px;line-height:1.7}
+.brand small{font-size:10px;letter-spacing:1px;margin-top:0}
+.sidebar-note p{font-size:14px}.sidebar nav button{white-space:normal}
+.topbar{flex-wrap:wrap}.top-actions{gap:8px}.breadcrumb{letter-spacing:0}
+.day-btn{min-width:0}.day-btn span{overflow-wrap:anywhere}.day-btn b{font-size:22px}
+.calendar-weekday{font-size:15px;overflow-wrap:anywhere;text-align:center}
+.calendar-cell{min-height:165px}.calendar-cell span{font-size:14px;line-height:1.6}.calendar-cell small{font-size:14px;max-height:none}.calendar-cell strong{font-size:22px}
+.panel pre{overflow-wrap:anywhere}.task-body{overflow-wrap:anywhere}
+.cloud-strip{font-size:15px}.calendar-cell:focus-visible{outline-offset:0}
+html[data-theme=dark]{--muted:#b9c5db}
+html[data-theme=dark] .book-label,html[data-theme=dark] .task-meta,html[data-theme=dark] .task-time,html[data-theme=dark] .micro,html[data-theme=dark] .checks label,html[data-theme=dark] .task-body summary{color:#b9c5db}
+@media(max-width:920px){
+ .sidebar{height:auto;min-height:0;inset:auto;padding:12px}
+ .sidebar nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:auto;gap:6px;margin:0}
+ .sidebar nav button{width:auto;min-height:46px;padding:9px 6px;font-size:15px;white-space:normal;line-height:1.5}
+ .top-actions .button{font-size:15px;padding:9px 12px}
+ .columns{grid-template-columns:minmax(0,1fr)}.hero p{font-size:17px}
+ .calendar-cell{padding:5px;min-height:180px}.calendar-cell span{font-size:13px;overflow-wrap:anywhere}.calendar-cell small{font-size:13px}
+ .calendar-weekday{font-size:13px}.day-btn span{font-size:14px}.week-strip{gap:4px}
+ .page-heading h1{font-size:29px}.hero h2{font-size:25px}h2{font-size:23px}h3{font-size:19px}
+ .task-heading{min-width:160px}.task-time{font-size:15px}
+ .section-row .tools{width:100%}.tools input[type=date]{min-width:0;flex:1}
+ .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-value{font-size:26px;overflow-wrap:anywhere}
+ footer{padding-bottom:24px}#saveState{display:block;font-size:14px;flex-basis:100%}
+}
+@media(max-width:920px){.calendar-grid{grid-template-columns:repeat(7,minmax(110px,1fr));overflow-x:auto;padding-bottom:12px;gap:6px}.calendar-cell{min-height:150px}.calendar-cell span{font-size:14px;overflow-wrap:normal}.calendar-cell:disabled{min-height:80px}}
